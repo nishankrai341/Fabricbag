@@ -1,0 +1,871 @@
+// PROPOSAL ONLY — design document, not wired to a project. No migration generated.
+// Matches docs/02-database-erd.md. Pending client answers (ERD §10) may change it.
+// Raw-SQL items to add in the first migration are listed at the bottom.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────── Enums ─────────────
+enum UserType { STAFF CUSTOMER }
+enum UserStatus { ACTIVE DISABLED PENDING_VERIFICATION }
+enum OrderingStatus { BROWSE_ONLY APPROVED SUSPENDED }
+enum AddressKind { BUSINESS DELIVERY BILLING }
+
+enum ProductType { ROLL_MATERIAL FINISHED_BAG CUSTOM_MADE }
+enum Visibility { PUBLISHED HIDDEN DRAFT }
+enum Availability { AVAILABLE OUT_OF_STOCK ON_REQUEST }
+enum PriceDisplay { SHOW_PRICE STARTING_FROM PRICE_ON_REQUEST }
+enum MaterialFamily { PLASTIC FABRIC NON_WOVEN OTHER }
+enum UnitDimension { COUNT MASS LENGTH AREA CONTAINER }
+enum SpecDataType { TEXT NUMBER ENUM BOOLEAN }
+enum PricingMode { FIXED STARTING_FROM TIERED ON_REQUEST }
+enum RateStatus { DRAFT ACTIVE SUPERSEDED EXPIRED }
+
+enum DesignAssetKind { LOGO ARTWORK }
+enum ScanStatus { PENDING CLEAN REJECTED }
+enum ApprovalStatus { PENDING APPROVED CHANGES_REQUESTED REJECTED }
+
+enum InquirySource { WEBSITE PHONE WALK_IN OTHER }
+enum InquiryStatus { NEW IN_REVIEW QUOTED CLOSED }
+enum QuotationStatus { DRAFT SENT REVISED ACCEPTED REJECTED EXPIRED CONVERTED }
+enum OrderStatus { PENDING CONFIRMED PROCESSING READY_FOR_DELIVERY DISPATCHED DELIVERED COMPLETED CANCELLED }
+enum PaymentStatus { UNPAID PARTIALLY_PAID PAID REFUNDED }
+
+enum InvoiceStatus { DRAFT ISSUED PARTIALLY_PAID PAID VOID }
+enum PaymentMethod { CASH BANK_TRANSFER QR_WALLET CHEQUE OTHER }
+enum PaymentRecordStatus { RECORDED REVERSED }
+
+enum LeadSource { WEBSITE_FORM INQUIRY MANUAL IMPORT }
+enum LeadStatus { NEW CONTACTED INTERESTED CONVERTED LOST }
+enum FilePurpose { PRODUCT_IMAGE ARTWORK LOGO CMS QUOTE_PDF INVOICE_PDF }
+enum FileVisibility { PUBLIC PRIVATE }
+enum NotificationChannel { IN_APP EMAIL SMS }
+enum NotificationStatus { QUEUED SENT FAILED READ }
+
+// ───────────── Identity ─────────────
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String?    @unique
+  phone        String?    @unique
+  passwordHash String
+  userType     UserType
+  status       UserStatus @default(ACTIVE)
+  roleId       String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id])
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  customer      Customer?
+  sessions      Session[]
+  resetTokens   PasswordResetToken[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+
+  @@index([userType, status])
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique
+  name        String
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id    String           @id @default(uuid()) @db.Uuid
+  code  String           @unique
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId         String    @db.Uuid
+  refreshTokenHash String
+  userAgent        String?
+  ip               String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// ───────────── Customers ─────────────
+model Customer {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @unique @db.Uuid
+  user           User           @relation(fields: [userId], references: [id])
+  customerNo     String         @unique
+  fullName       String
+  orderingStatus OrderingStatus @default(BROWSE_ONLY)
+  creditLimit    Decimal?       @db.Decimal(14, 2)
+  creditDays     Int?
+  internalNotes  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  business     CustomerBusinessProfile?
+  addresses    CustomerAddress[]
+  designs      SavedDesign[]
+  designAssets DesignAsset[]
+  rates        ProductRate[]
+  inquiries    Inquiry[]
+  quotations   Quotation[]
+  orders       Order[]
+  orderItems   OrderItem[]
+  invoices     Invoice[]
+  payments     Payment[]
+  files        FileAsset[]
+  leads        MarketingLead[]
+
+  @@index([orderingStatus])
+}
+
+model CustomerBusinessProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  customerId   String   @unique @db.Uuid
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shopName     String
+  panNumber    String?
+  vatNumber    String?
+  businessType String?
+  updatedAt    DateTime @updatedAt
+}
+
+model CustomerAddress {
+  id           String      @id @default(uuid()) @db.Uuid
+  customerId   String      @db.Uuid
+  customer     Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  kind         AddressKind
+  line1        String
+  wardTole     String?
+  municipality String?
+  district     String
+  landmark     String?
+  contactPhone String?
+  isDefault    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+
+  @@index([customerId])
+}
+
+// ───────────── Catalog ─────────────
+model Category {
+  id        String     @id @default(uuid()) @db.Uuid
+  slug      String     @unique
+  nameEn    String
+  nameNe    String?
+  parentId  String?    @db.Uuid
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  sortOrder Int        @default(0)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+  products  Product[]
+}
+
+model MeasurementUnit {
+  id           String        @id @default(uuid()) @db.Uuid
+  code         String        @unique // pcs kg g m m2 roll bundle packet
+  nameEn       String
+  dimension    UnitDimension
+  toBaseFactor Decimal?      @db.Decimal(18, 6) // only within same non-CONTAINER dimension
+  isActive     Boolean       @default(true)
+
+  products       Product[]
+  rates          ProductRate[]
+  orderItems     OrderItem[]
+  quotationItems QuotationItem[]
+  invoiceItems   InvoiceItem[]
+}
+
+model Material {
+  id        String         @id @default(uuid()) @db.Uuid
+  code      String         @unique
+  nameEn    String
+  nameNe    String?
+  family    MaterialFamily
+  isActive  Boolean        @default(true)
+  products  Product[]
+  variants  ProductVariant[]
+}
+
+model Color {
+  id       String   @id @default(uuid()) @db.Uuid
+  nameEn   String
+  nameNe   String?
+  hex      String?
+  isActive Boolean  @default(true)
+  variants ProductVariant[]
+}
+
+model Product {
+  id                String        @id @default(uuid()) @db.Uuid
+  categoryId        String        @db.Uuid
+  category          Category      @relation(fields: [categoryId], references: [id])
+  slug              String        @unique
+  nameEn            String
+  nameNe            String?
+  descriptionEn     String?
+  descriptionNe     String?
+  productType       ProductType
+  defaultMaterialId String?       @db.Uuid
+  defaultMaterial   Material?     @relation(fields: [defaultMaterialId], references: [id])
+  baseUnitId        String        @db.Uuid
+  baseUnit          MeasurementUnit @relation(fields: [baseUnitId], references: [id])
+  visibility        Visibility    @default(DRAFT)
+  availability      Availability  @default(ON_REQUEST)
+  priceDisplay      PriceDisplay  @default(PRICE_ON_REQUEST)
+  allowDirectOrder  Boolean       @default(false)
+  isFeatured        Boolean       @default(false)
+  minOrderQty       Decimal?      @db.Decimal(14, 3)
+  advisoryStockQty  Decimal?      @db.Decimal(14, 3) // advisory only, not a ledger
+  sortOrder         Int           @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  deletedAt         DateTime?
+
+  variants       ProductVariant[]
+  images         ProductImage[]
+  specs          ProductSpecValue[]
+  sizeOptions    SizeOption[]
+  rates          ProductRate[]
+  customization  CustomizationConfig?
+  savedDesigns   SavedDesign[]
+  orderItems     OrderItem[]
+  quotationItems QuotationItem[]
+
+  @@index([categoryId, visibility, sortOrder])
+}
+
+model ProductVariant {
+  id              String   @id @default(uuid()) @db.Uuid
+  productId       String   @db.Uuid
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku             String?  @unique
+  materialId      String?  @db.Uuid
+  material        Material? @relation(fields: [materialId], references: [id])
+  colorId         String?  @db.Uuid
+  color           Color?   @relation(fields: [colorId], references: [id])
+  widthMm         Decimal? @db.Decimal(10, 2)
+  lengthM         Decimal? @db.Decimal(12, 3)
+  heightMm        Decimal? @db.Decimal(10, 2)
+  gussetMm        Decimal? @db.Decimal(10, 2)
+  thicknessMicron Decimal? @db.Decimal(8, 2)
+  gsm             Decimal? @db.Decimal(8, 2)
+  rollWeightKg    Decimal? @db.Decimal(12, 3) // this roll's real weight; never assumed
+  handleType      String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rates      ProductRate[]
+  orderItems OrderItem[]
+
+  @@index([productId, isActive])
+}
+
+model ProductImage {
+  id          String    @id @default(uuid()) @db.Uuid
+  productId   String    @db.Uuid
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fileAssetId String    @db.Uuid
+  file        FileAsset @relation(fields: [fileAssetId], references: [id])
+  altText     String?
+  sortOrder   Int       @default(0)
+  isPrimary   Boolean   @default(false)
+
+  @@index([productId, sortOrder])
+}
+
+model SpecDefinition {
+  id          String       @id @default(uuid()) @db.Uuid
+  appliesTo   ProductType
+  key         String
+  labelEn     String
+  labelNe     String?
+  dataType    SpecDataType
+  unitLabel   String?
+  enumOptions Json?
+  isFilterable Boolean     @default(false)
+  sortOrder   Int          @default(0)
+  values      ProductSpecValue[]
+
+  @@unique([appliesTo, key])
+}
+
+model ProductSpecValue {
+  id               String         @id @default(uuid()) @db.Uuid
+  productId        String         @db.Uuid
+  product          Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  specDefinitionId String         @db.Uuid
+  specDefinition   SpecDefinition @relation(fields: [specDefinitionId], references: [id])
+  value            String
+
+  @@unique([productId, specDefinitionId])
+}
+
+model SizeOption {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @db.Uuid
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     String
+  widthMm   Decimal  @db.Decimal(10, 2)
+  heightMm  Decimal  @db.Decimal(10, 2)
+  gussetMm  Decimal? @db.Decimal(10, 2)
+  isActive  Boolean  @default(true)
+
+  @@index([productId])
+}
+
+model ProductRate {
+  id               String      @id @default(uuid()) @db.Uuid
+  productId        String      @db.Uuid
+  product          Product     @relation(fields: [productId], references: [id])
+  variantId        String?     @db.Uuid
+  variant          ProductVariant? @relation(fields: [variantId], references: [id])
+  customerId       String?     @db.Uuid // null = public rate
+  customer         Customer?   @relation(fields: [customerId], references: [id])
+  unitId           String      @db.Uuid
+  unit             MeasurementUnit @relation(fields: [unitId], references: [id])
+  pricingMode      PricingMode
+  unitPrice        Decimal?    @db.Decimal(14, 4)
+  minQty           Decimal?    @db.Decimal(14, 3)
+  discountPct      Decimal?    @db.Decimal(5, 2)
+  taxInclusive     Boolean     @default(false)
+  validFrom        DateTime
+  validTo          DateTime?
+  status           RateStatus  @default(DRAFT)
+  supersedesRateId String?     @unique @db.Uuid
+  supersedes       ProductRate? @relation("RateHistory", fields: [supersedesRateId], references: [id])
+  supersededBy     ProductRate? @relation("RateHistory")
+  createdById      String?     @db.Uuid
+  createdAt        DateTime    @default(now())
+
+  tiers      QuantityPriceTier[]
+  orderItems OrderItem[]
+
+  @@index([productId, variantId, customerId, unitId, status])
+}
+
+model QuantityPriceTier {
+  id        String      @id @default(uuid()) @db.Uuid
+  rateId    String      @db.Uuid
+  rate      ProductRate @relation(fields: [rateId], references: [id], onDelete: Cascade)
+  fromQty   Decimal     @db.Decimal(14, 3)
+  toQty     Decimal?    @db.Decimal(14, 3)
+  unitPrice Decimal     @db.Decimal(14, 4)
+
+  @@unique([rateId, fromQty])
+}
+
+model CustomizationConfig {
+  id                 String  @id @default(uuid()) @db.Uuid
+  productId          String  @unique @db.Uuid
+  product            Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  minWidthMm         Decimal? @db.Decimal(10, 2)
+  maxWidthMm         Decimal? @db.Decimal(10, 2)
+  minHeightMm        Decimal? @db.Decimal(10, 2)
+  maxHeightMm        Decimal? @db.Decimal(10, 2)
+  minGussetMm        Decimal? @db.Decimal(10, 2)
+  maxGussetMm        Decimal? @db.Decimal(10, 2)
+  minOrderQty        Decimal? @db.Decimal(14, 3)
+  allowedMaterialIds Json?
+  allowedColorIds    Json?
+  allowedHandleTypes Json?
+  allowedPrintModes  Json?
+  allowCustomSize    Boolean @default(true)
+  allowArtworkUpload Boolean @default(true)
+}
+
+// ───────────── Customization ─────────────
+model SavedDesign {
+  id                String   @id @default(uuid()) @db.Uuid
+  customerId        String   @db.Uuid
+  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId         String   @db.Uuid
+  product           Product  @relation(fields: [productId], references: [id])
+  name              String
+  version           Int      @default(1)
+  selectionSnapshot Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+
+  selections     CustomizationSelection[]
+  assets         DesignAsset[]
+  orderItems     OrderItem[]
+  quotationItems QuotationItem[]
+
+  @@index([customerId])
+}
+
+model CustomizationSelection {
+  id            String      @id @default(uuid()) @db.Uuid
+  savedDesignId String      @db.Uuid
+  design        SavedDesign @relation(fields: [savedDesignId], references: [id], onDelete: Cascade)
+  optionKey     String
+  valueText     String?
+  valueNumber   Decimal?    @db.Decimal(14, 3)
+  unit          String?
+
+  @@index([savedDesignId])
+}
+
+model DesignAsset {
+  id            String          @id @default(uuid()) @db.Uuid
+  savedDesignId String?         @db.Uuid
+  design        SavedDesign?    @relation(fields: [savedDesignId], references: [id])
+  customerId    String          @db.Uuid
+  customer      Customer        @relation(fields: [customerId], references: [id])
+  fileAssetId   String          @db.Uuid
+  file          FileAsset       @relation(fields: [fileAssetId], references: [id])
+  kind          DesignAssetKind
+  scanStatus    ScanStatus      @default(PENDING)
+  placement     Json?
+  createdAt     DateTime        @default(now())
+
+  approvals DesignApproval[]
+
+  @@index([customerId])
+}
+
+model DesignApproval {
+  id            String         @id @default(uuid()) @db.Uuid
+  designAssetId String         @db.Uuid
+  designAsset   DesignAsset    @relation(fields: [designAssetId], references: [id])
+  orderItemId   String?        @db.Uuid
+  orderItem     OrderItem?     @relation(fields: [orderItemId], references: [id])
+  status        ApprovalStatus @default(PENDING)
+  note          String?
+  decidedById   String?        @db.Uuid
+  decidedAt     DateTime?
+  createdAt     DateTime       @default(now())
+}
+
+// ───────────── Sales ─────────────
+model Inquiry {
+  id             String        @id @default(uuid()) @db.Uuid
+  inquiryNo      String        @unique
+  customerId     String?       @db.Uuid
+  customer       Customer?     @relation(fields: [customerId], references: [id])
+  contactName    String
+  contactPhone   String
+  contactEmail   String?
+  source         InquirySource @default(WEBSITE)
+  status         InquiryStatus @default(NEW)
+  message        String?
+  requestedItems Json?
+  assignedToId   String?       @db.Uuid
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  quotations Quotation[]
+
+  @@index([status, createdAt])
+}
+
+model Quotation {
+  id                String          @id @default(uuid()) @db.Uuid
+  quotationNo       String          @unique
+  customerId        String          @db.Uuid
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  inquiryId         String?         @db.Uuid
+  inquiry           Inquiry?        @relation(fields: [inquiryId], references: [id])
+  currentRevisionId String?         @unique @db.Uuid
+  status            QuotationStatus @default(DRAFT)
+  acceptedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  revisions QuotationRevision[]
+  order     Order?
+
+  @@index([customerId, status])
+}
+
+model QuotationRevision {
+  id             String    @id @default(uuid()) @db.Uuid
+  quotationId    String    @db.Uuid
+  quotation      Quotation @relation(fields: [quotationId], references: [id])
+  revisionNo     Int
+  subtotal       Decimal   @db.Decimal(14, 2)
+  discountAmount Decimal   @default(0) @db.Decimal(14, 2)
+  taxAmount      Decimal   @default(0) @db.Decimal(14, 2)
+  total          Decimal   @db.Decimal(14, 2)
+  validUntil     DateTime?
+  terms          String?
+  pdfFileAssetId String?   @db.Uuid
+  sentAt         DateTime?
+  createdById    String?   @db.Uuid
+  createdAt      DateTime  @default(now())
+
+  items QuotationItem[]
+
+  @@unique([quotationId, revisionNo])
+}
+
+model QuotationItem {
+  id            String            @id @default(uuid()) @db.Uuid
+  revisionId    String            @db.Uuid
+  revision      QuotationRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  productId     String?           @db.Uuid
+  product       Product?          @relation(fields: [productId], references: [id])
+  description   String
+  specSnapshot  Json?
+  savedDesignId String?           @db.Uuid
+  design        SavedDesign?      @relation(fields: [savedDesignId], references: [id])
+  quantity      Decimal           @db.Decimal(14, 3)
+  unitId        String            @db.Uuid
+  unit          MeasurementUnit   @relation(fields: [unitId], references: [id])
+  unitPrice     Decimal           @db.Decimal(14, 4)
+  lineTotal     Decimal           @db.Decimal(14, 2)
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id                      String        @id @default(uuid()) @db.Uuid
+  orderNo                 String        @unique
+  customerId              String        @db.Uuid
+  customer                Customer      @relation(fields: [customerId], references: [id])
+  quotationId             String?       @unique @db.Uuid
+  quotation               Quotation?    @relation(fields: [quotationId], references: [id])
+  status                  OrderStatus   @default(PENDING)
+  paymentStatus           PaymentStatus @default(UNPAID) // derived from allocations
+  deliveryAddressSnapshot Json
+  customerNote            String?
+  internalNote            String?
+  subtotal                Decimal       @db.Decimal(14, 2)
+  discountAmount          Decimal       @default(0) @db.Decimal(14, 2)
+  taxAmount               Decimal       @default(0) @db.Decimal(14, 2)
+  deliveryCharge          Decimal       @default(0) @db.Decimal(14, 2)
+  total                   Decimal       @db.Decimal(14, 2)
+  cancelReason            String?
+  placedAt                DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  items    OrderItem[]
+  history  OrderStatusHistory[]
+  invoices Invoice[]
+
+  @@index([customerId, status, placedAt(sort: Desc)])
+  @@index([status, placedAt])
+}
+
+model OrderItem {
+  id                    String         @id @default(uuid()) @db.Uuid
+  orderId               String         @db.Uuid
+  order                 Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId            String         @db.Uuid
+  customer              Customer       @relation(fields: [customerId], references: [id])
+  productId             String         @db.Uuid
+  product               Product        @relation(fields: [productId], references: [id])
+  variantId             String?        @db.Uuid
+  variant               ProductVariant? @relation(fields: [variantId], references: [id])
+  savedDesignId         String?        @db.Uuid
+  design                SavedDesign?   @relation(fields: [savedDesignId], references: [id])
+  rateId                String?        @db.Uuid
+  rate                  ProductRate?   @relation(fields: [rateId], references: [id])
+  quotationItemId       String?        @db.Uuid
+  quotationItem         QuotationItem? @relation(fields: [quotationItemId], references: [id])
+  nameSnapshot          String
+  specSnapshot          Json           // frozen
+  customizationSnapshot Json?          // frozen
+  quantity              Decimal        @db.Decimal(14, 3)
+  unitId                String         @db.Uuid
+  unit                  MeasurementUnit @relation(fields: [unitId], references: [id])
+  unitPrice             Decimal        @db.Decimal(14, 4) // frozen
+  discountAmount        Decimal        @default(0) @db.Decimal(14, 2)
+  lineTotal             Decimal        @db.Decimal(14, 2)
+
+  invoiceItems InvoiceItem[]
+  approvals    DesignApproval[]
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([productId])
+}
+
+model OrderStatusHistory {
+  id          String       @id @default(uuid()) @db.Uuid
+  orderId     String       @db.Uuid
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus  OrderStatus?
+  toStatus    OrderStatus
+  note        String?
+  changedById String?      @db.Uuid
+  changedAt   DateTime     @default(now())
+
+  @@index([orderId, changedAt])
+}
+
+// ───────────── Finance ─────────────
+model Invoice {
+  id              String        @id @default(uuid()) @db.Uuid
+  invoiceNo       String        @unique
+  customerId      String        @db.Uuid
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  orderId         String?       @db.Uuid
+  order           Order?        @relation(fields: [orderId], references: [id])
+  status          InvoiceStatus @default(DRAFT)
+  issueDate       DateTime      @db.Date
+  dueDate         DateTime      @db.Date
+  subtotal        Decimal       @db.Decimal(14, 2)
+  discountAmount  Decimal       @default(0) @db.Decimal(14, 2)
+  taxAmount       Decimal       @default(0) @db.Decimal(14, 2)
+  total           Decimal       @db.Decimal(14, 2)
+  amountPaid      Decimal       @default(0) @db.Decimal(14, 2) // cache; recomputed in same txn
+  billingSnapshot Json
+  voidReason      String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items       InvoiceItem[]
+  allocations PaymentAllocation[]
+
+  @@index([customerId, status])
+  @@index([dueDate])
+}
+
+model InvoiceItem {
+  id          String          @id @default(uuid()) @db.Uuid
+  invoiceId   String          @db.Uuid
+  invoice     Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  orderItemId String?         @db.Uuid
+  orderItem   OrderItem?      @relation(fields: [orderItemId], references: [id])
+  description String
+  quantity    Decimal         @db.Decimal(14, 3)
+  unitId      String          @db.Uuid
+  unit        MeasurementUnit @relation(fields: [unitId], references: [id])
+  unitPrice   Decimal         @db.Decimal(14, 4)
+  lineTotal   Decimal         @db.Decimal(14, 2)
+}
+
+model Payment {
+  id           String              @id @default(uuid()) @db.Uuid
+  receiptNo    String              @unique
+  customerId   String              @db.Uuid
+  customer     Customer            @relation(fields: [customerId], references: [id])
+  amount       Decimal             @db.Decimal(14, 2)
+  receivedOn   DateTime            @db.Date
+  method       PaymentMethod
+  reference    String?
+  note         String?
+  status       PaymentRecordStatus @default(RECORDED)
+  recordedById String?             @db.Uuid
+  createdAt    DateTime            @default(now())
+
+  allocations PaymentAllocation[]
+
+  @@index([customerId, receivedOn])
+}
+
+model PaymentAllocation {
+  id          String   @id @default(uuid()) @db.Uuid
+  paymentId   String   @db.Uuid
+  payment     Payment  @relation(fields: [paymentId], references: [id])
+  invoiceId   String   @db.Uuid
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  amount      Decimal  @db.Decimal(14, 2) // negative rows = reversal (compensating)
+  allocatedAt DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([invoiceId])
+}
+
+// ───────────── Content & platform ─────────────
+model BusinessProfile {
+  id             String  @id @default(uuid()) @db.Uuid
+  nameEn         String
+  nameNe         String?
+  logoFileId     String? @db.Uuid
+  address        String?
+  phones         Json?
+  email          String?
+  whatsapp       String? // verified only
+  panNumber      String?
+  vatNumber      String?
+  businessHours  Json?
+  socialLinks    Json?
+  updatedAt      DateTime @updatedAt
+}
+
+model SiteSetting {
+  key         String   @id
+  value       Json
+  isPublic    Boolean  @default(false)
+  updatedById String?  @db.Uuid
+  updatedAt   DateTime @updatedAt
+}
+
+model HomepageSection {
+  id        String  @id @default(uuid()) @db.Uuid
+  key       String  @unique
+  contentEn Json
+  contentNe Json?
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+}
+
+model Banner {
+  id          String    @id @default(uuid()) @db.Uuid
+  imageFileId String    @db.Uuid
+  title       String?
+  linkUrl     String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+}
+
+model GalleryImage {
+  id        String  @id @default(uuid()) @db.Uuid
+  fileId    String  @db.Uuid
+  caption   String?
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+}
+
+model StaticPage {
+  id          String  @id @default(uuid()) @db.Uuid
+  slug        String  @unique
+  titleEn     String
+  bodyEn      String
+  titleNe     String?
+  bodyNe      String?
+  isPublished Boolean @default(false)
+  updatedAt   DateTime @updatedAt
+}
+
+model SeoSetting {
+  id             String  @id @default(uuid()) @db.Uuid
+  targetType     String  // PAGE | PRODUCT | CATEGORY | GLOBAL
+  targetId       String
+  title          String?
+  description    String?
+  ogImageFileId  String? @db.Uuid
+  canonicalUrl   String?
+
+  @@unique([targetType, targetId])
+}
+
+model MarketingLead {
+  id               String     @id @default(uuid()) @db.Uuid
+  name             String
+  phone            String?
+  email            String?
+  shopName         String?
+  source           LeadSource
+  status           LeadStatus @default(NEW)
+  customerId       String?    @db.Uuid
+  customer         Customer?  @relation(fields: [customerId], references: [id])
+  note             String?
+  consentToContact Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+
+  @@index([status])
+}
+
+model FileAsset {
+  id              String         @id @default(uuid()) @db.Uuid
+  objectKey       String         @unique
+  originalName    String
+  mimeType        String         // sniffed server-side
+  sizeBytes       Int
+  sha256          String
+  purpose         FilePurpose
+  visibility      FileVisibility @default(PRIVATE)
+  ownerCustomerId String?        @db.Uuid
+  owner           Customer?      @relation(fields: [ownerCustomerId], references: [id])
+  uploadedById    String?        @db.Uuid
+  createdAt       DateTime       @default(now())
+
+  productImages ProductImage[]
+  designAssets  DesignAsset[]
+
+  @@index([ownerCustomerId])
+}
+
+model Notification {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String              @db.Uuid
+  user      User                @relation(fields: [userId], references: [id])
+  channel   NotificationChannel
+  type      String
+  payload   Json
+  status    NotificationStatus  @default(QUEUED)
+  attempts  Int                 @default(0)
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([status, createdAt])
+  @@index([userId, status])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @db.Uuid
+  actor       User?    @relation(fields: [actorUserId], references: [id])
+  action      String
+  entityType  String
+  entityId    String
+  before      Json?
+  after       Json?
+  ip          String?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model DocumentSequence {
+  key       String @id // e.g. ORD-2026
+  lastValue Int    @default(0)
+}
+
+// ───────────── Raw SQL to add in the first migration (Prisma cannot express these) ─────────────
+// 1. CREATE EXTENSION btree_gist, pg_trgm;
+// 2. ProductRate: EXCLUDE USING gist (product_id WITH =, COALESCE(variant_id,'0000…') WITH =,
+//      COALESCE(customer_id,'0000…') WITH =, unit_id WITH =, tstzrange(valid_from, valid_to) WITH &&)
+//      WHERE (status = 'ACTIVE');
+// 3. CHECKs: User (email IS NOT NULL OR phone IS NOT NULL); QuantityPriceTier (to_qty IS NULL OR to_qty > from_qty);
+//    Invoice (amount_paid BETWEEN 0 AND total); Payment (amount > 0); Product rates unit_price >= 0.
+// 4. Constraint triggers: Σ allocations per payment <= payment.amount; Σ allocations per invoice <= invoice.total.
+// 5. Immutability triggers: block UPDATE of OrderItem snapshot/price columns, QuotationRevision/QuotationItem after SENT,
+//    OrderStatusHistory, PaymentAllocation, AuditLog (REVOKE UPDATE, DELETE for app role on AuditLog).
+// 6. GIN trigram indexes on Product.nameEn / nameNe for search.
+// 7. Partial index: Invoice(due_date) WHERE status IN ('ISSUED','PARTIALLY_PAID').

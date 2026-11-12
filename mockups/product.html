@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plastic Roll C — Sanjana Plastic & Business Link (DEMO)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="products">
+<div data-slot="header"></div>
+<main id="main" class="section"><div class="container">
+  <nav class="hint"><a href="index.html">Home</a> / <a href="products.html">Products</a> / Plastic Roll C (DEMO)</nav>
+  <div class="grid g2" style="margin-top:16px;align-items:start">
+    <div>
+      <div class="placeholder-photo" style="height:380px">DEMO product photo</div>
+      <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:10px"><div class="placeholder-photo" style="height:70px">1</div><div class="placeholder-photo" style="height:70px">2</div><div class="placeholder-photo" style="height:70px">3</div><div class="placeholder-photo" style="height:70px">4</div></div>
+    </div>
+    <div>
+      <span class="badge blue">Roll / raw material</span> <span class="badge green">Availability: confirm on request</span>
+      <h1 style="font-size:2rem;margin-top:10px">Plastic Roll C <small style="color:var(--muted);font-weight:500">(DEMO)</small></h1>
+      <p style="color:var(--muted)">प्लास्टिक रोल</p>
+      <div class="card" style="margin:16px 0">
+        <div class="price" style="font-size:1.6rem">Rs. 000.00 <small>/ kg</small></div>
+        <p class="hint" style="margin:4px 0 0">Approved rate · valid until <b>— date set by owner</b> · Placeholder value</p>
+        <table style="margin-top:12px"><caption class="hint" style="text-align:left">Quantity-based rates (demo structure)</caption>
+          <tr><th>Quantity</th><th class="num">Rate</th></tr>
+          <tr><td>1 – 49 kg</td><td class="num">Rs. 000.00</td></tr>
+          <tr><td>50 – 199 kg</td><td class="num">Rs. 000.00</td></tr>
+          <tr><td>200 kg +</td><td class="num">Request quotation</td></tr></table>
+      </div>
+      <h3>Specifications</h3>
+      <table class="card" style="padding:8px 16px">
+        <tr><td class="hint">Material grade</td><td>placeholder</td></tr>
+        <tr><td class="hint">Thickness</td><td>placeholder (micron)</td></tr>
+        <tr><td class="hint">Width / Length</td><td>placeholder</td></tr>
+        <tr><td class="hint">Roll weight</td><td>per roll, as listed</td></tr>
+        <tr><td class="hint">Minimum order</td><td>placeholder</td></tr>
+      </table>
+      <div class="card" style="margin-top:16px">
+        <div class="row2"><div class="field"><label for="u">Order unit</label><select id="u"><option>kg</option><option>Roll</option></select></div>
+          <div class="field"><label for="qty">Quantity</label><input id="qty" type="number" min="1" value="50"></div></div>
+        <p class="hint">Unit conversion (kg ⇄ roll) is only available when this roll's weight is listed.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn" href="login-demo" onclick="event.preventDefault();alert('Demo: login required. Direct ordering is available only to approved customers when a valid rate exists.')">Order (approved customers)</a>
+          <a class="btn red" href="customize.html">Request Quotation</a></div>
+      </div>
+    </div>
+  </div>
+</div></main>
+<div data-slot="footer"></div>
+<script src="assets/layout.js"></script>
+</body></html>

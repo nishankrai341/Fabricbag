@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account — Sanjana Plastic & Business Link (DEMO)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="account">
+<div data-slot="header"></div>
+<main id="main" class="section"><div class="container">
+  <span class="eyebrow">Customer portal · DEMO customer</span>
+  <h1 style="font-size:2rem">Hello, Demo Shop</h1>
+  <div class="tabs" role="tablist"><a class="active" href="#">Overview</a><a href="#orders">Orders</a><a href="#quotes">Quotations</a><a href="#payments">Payments</a><a href="#designs">Saved designs</a><a href="#profile">Profile</a></div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="l">Open orders</div><div class="v">2</div></div>
+    <div class="kpi"><div class="l">Quotations awaiting reply</div><div class="v">1</div></div>
+    <div class="kpi warn"><div class="l">Outstanding balance</div><div class="v">Rs. 0,000</div></div>
+    <div class="kpi"><div class="l">Saved designs</div><div class="v">3</div></div>
+  </div>
+
+  <section class="card" id="orders" style="margin-top:24px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2 style="font-size:1.3rem">Order ORD-DEMO-0001</h2><span><span class="badge blue">Processing</span> <span class="badge amber">Partially paid</span></span></div>
+    <div class="timeline" aria-label="Order status">
+      <div class="t done">Pending</div><div class="t done">Confirmed</div><div class="t done">Processing</div><div class="t">Ready for delivery</div><div class="t">Dispatched</div><div class="t">Delivered</div><div class="t">Completed</div>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>Item</th><th>Specification (frozen at order)</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr>
+      <tr><td>Handle bag, printed</td><td class="hint">300×400×100 mm · Shop name · One side</td><td class="num">500 pcs</td><td class="num">0.00</td><td class="num">0,000.00</td></tr>
+    </table></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><a class="btn small" href="#">Reorder</a><a class="btn small ghost" href="#">Download invoice</a><a class="btn small ghost" href="#">Cancel (before dispatch only)</a></div>
+  </section>
+
+  <section class="card" id="quotes" style="margin-top:20px">
+    <h2 style="font-size:1.3rem">Quotations</h2>
+    <div class="table-wrap"><table>
+      <tr><th>No.</th><th>Description</th><th>Version</th><th>Status</th><th></th></tr>
+      <tr><td>QTN-DEMO-0004</td><td>Custom printed bags</td><td>Rev 2 <span class="hint">(Rev 1 kept)</span></td><td><span class="badge amber">Sent</span></td><td><a class="btn small" href="#">View PDF</a> <a class="btn small red" href="#">Accept</a></td></tr>
+    </table></div>
+  </section>
+
+  <section class="card" id="payments" style="margin-top:20px">
+    <h2 style="font-size:1.3rem">Statement</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Date</th><th>Document</th><th class="num">Invoice</th><th class="num">Paid</th><th class="num">Balance</th></tr>
+      <tr><td>—</td><td>INV-DEMO-0001 (due —)</td><td class="num">0,000.00</td><td class="num"></td><td class="num">0,000.00</td></tr>
+      <tr><td>—</td><td>Receipt RCPT-DEMO-0001</td><td class="num"></td><td class="num">0,000.00</td><td class="num">0,000.00</td></tr>
+    </table></div>
+    <p class="hint">Amounts are placeholders. No online payment is available; payments are recorded by the business.</p>
+  </section>
+
+  <section class="card" id="designs" style="margin-top:20px">
+    <h2 style="font-size:1.3rem">Saved designs</h2>
+    <div class="grid g4">
+      <div class="card"><div class="placeholder-photo" style="height:110px">Preview</div><p><b>Shop bag – white</b><br><span class="hint">Handle bag · 300×400</span></p><a class="btn small" href="customize.html">Edit</a> <a class="btn small ghost" href="#">Order again</a></div>
+      <div class="card"><div class="placeholder-photo" style="height:110px">Preview</div><p><b>Gift bag – navy</b><br><span class="hint">Shopping bag · 250×350</span></p><a class="btn small" href="customize.html">Edit</a> <a class="btn small ghost" href="#">Order again</a></div>
+    </div>
+  </section>
+
+  <section class="card" id="profile" style="margin-top:20px">
+    <h2 style="font-size:1.3rem">Shop profile</h2>
+    <div class="row2"><div class="field"><label>Shop name</label><input value="Demo Shop"></div><div class="field"><label>Phone</label><input value="98XXXXXXXX"></div></div>
+    <div class="row2"><div class="field"><label>Delivery address</label><input value="Demo address, Kathmandu"></div><div class="field"><label>PAN / VAT (optional)</label><input placeholder="Optional"></div></div>
+    <button class="btn">Save</button>
+  </section>
+</div></main>
+<div data-slot="footer"></div>
+<script src="assets/layout.js"></script>
+</body></html>

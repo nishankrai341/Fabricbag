@@ -1,0 +1,11 @@
+{
+  "name": "sanjana-business-link",
+  "private": true,
+  "description": "Sanjana Plastic & Business Link — monorepo root. Proxies to apps/web until the full monorepo is set up in Phase 2.",
+  "scripts": {
+    "dev": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "start": "npm --prefix apps/web run start",
+    "icons": "npm --prefix apps/web run icons"
+  }
+}

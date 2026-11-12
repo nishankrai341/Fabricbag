@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard — Sanjana Plastic & Business Link (DEMO)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="demo-ribbon">DEMO</div>
+<div class="layout-app">
+  <aside class="side" aria-label="Admin menu">
+    <a class="logo" href="index.html"><span class="logo-mark">SP</span><span>Sanjana Plastic<small style="color:#9fb4dc">Owner panel</small></span></a>
+    <a class="active" href="#">Dashboard</a><a href="#">Products</a><a href="#">Categories</a><a href="#">Product Rates</a><a href="#">Customers</a><a href="#">Inquiries</a><a href="#">Quotations</a><a href="#">Orders</a><a href="#">Payments</a><a href="#">Customer Dues</a><a href="#">Content</a><a href="#">Gallery &amp; Banners</a><a href="#">Reports</a><a href="#">Settings</a>
+  </aside>
+  <main class="main-pane" id="main">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <h1 style="font-size:1.6rem;margin:0">Dashboard</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn small" href="#">+ Add product</a><a class="btn small ghost" href="#">Update rate</a><a class="btn small red" href="#">Record payment</a></div>
+    </div>
+    <p class="hint">All figures are demo placeholders — real numbers are calculated from orders, invoices and payments.</p>
+
+    <div class="kpis" style="margin-top:12px">
+      <div class="kpi"><div class="l">Total orders</div><div class="v">00</div></div>
+      <div class="kpi"><div class="l">Today's orders</div><div class="v">0</div></div>
+      <div class="kpi"><div class="l">Monthly order value</div><div class="v">Rs. 0,000</div></div>
+      <div class="kpi"><div class="l">Invoiced sales</div><div class="v">Rs. 0,000</div></div>
+      <div class="kpi"><div class="l">Payments received</div><div class="v">Rs. 0,000</div></div>
+      <div class="kpi warn"><div class="l">Outstanding balance</div><div class="v">Rs. 0,000</div></div>
+      <div class="kpi"><div class="l">Pending inquiries</div><div class="v">0</div></div>
+      <div class="kpi"><div class="l">Pending quotations</div><div class="v">0</div></div>
+      <div class="kpi"><div class="l">Pending orders</div><div class="v">0</div></div>
+      <div class="kpi"><div class="l">Total customers</div><div class="v">00</div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:20px">
+      <section class="card"><h2 style="font-size:1.1rem">Who owes how much</h2>
+        <div class="table-wrap"><table>
+          <tr><th>Customer</th><th class="num">Outstanding</th><th>Oldest due</th><th></th></tr>
+          <tr><td>Demo Shop A</td><td class="num">0,000.00</td><td><span class="badge red">Overdue</span></td><td><a href="#">Statement</a></td></tr>
+          <tr><td>Demo Store B</td><td class="num">0,000.00</td><td><span class="badge green">Not due</span></td><td><a href="#">Statement</a></td></tr>
+          <tr><td>Demo Cafe C</td><td class="num">0,000.00</td><td><span class="badge amber">Due soon</span></td><td><a href="#">Statement</a></td></tr>
+        </table></div></section>
+      <section class="card"><h2 style="font-size:1.1rem">Most requested products</h2>
+        <div class="bars">
+          <div class="bar"><span>Handle bag (demo)</span><i style="width:90%"></i><b>—</b></div>
+          <div class="bar"><span>Plastic roll (demo)</span><i style="width:65%"></i><b>—</b></div>
+          <div class="bar"><span>Fabric roll (demo)</span><i style="width:45%"></i><b>—</b></div>
+          <div class="bar"><span>Printed bag (demo)</span><i style="width:30%"></i><b>—</b></div>
+        </div></section>
+    </div>
+
+    <section class="card" style="margin-top:20px"><h2 style="font-size:1.1rem">Needs attention</h2>
+      <div class="table-wrap"><table>
+        <tr><th>Type</th><th>Reference</th><th>Customer</th><th>Status</th><th></th></tr>
+        <tr><td>Inquiry</td><td>INQ-DEMO-0007</td><td>Demo Shop A</td><td><span class="badge blue">New</span></td><td><a class="btn small" href="#">Create quotation</a></td></tr>
+        <tr><td>Order</td><td>ORD-DEMO-0003</td><td>Demo Store B</td><td><span class="badge amber">Pending</span></td><td><a class="btn small" href="#">Confirm</a></td></tr>
+        <tr><td>Artwork</td><td>ORD-DEMO-0002</td><td>Demo Cafe C</td><td><span class="badge grey">Awaiting approval</span></td><td><a class="btn small" href="#">Review</a></td></tr>
+      </table></div></section>
+  </main>
+</div>
+</body></html>

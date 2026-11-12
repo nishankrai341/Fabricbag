@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Products — Sanjana Plastic & Business Link (DEMO)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="products">
+<div data-slot="header"></div>
+<main id="main" class="section">
+<div class="container">
+  <nav class="hint" aria-label="Breadcrumb"><a href="index.html">Home</a> / Products</nav>
+  <h1 style="font-size:2rem;margin-top:8px">Products</h1>
+  <p class="lead">All items below are DEMO placeholders. Rates appear only when approved by the owner.</p>
+  <div class="grid" style="grid-template-columns:260px 1fr;gap:24px;margin-top:20px" id="shop">
+    <aside class="card" style="align-self:start" aria-label="Filters">
+      <h3>Filters</h3>
+      <div class="field"><label for="q">Search</label><input id="q" type="search" placeholder="Search products"></div>
+      <div class="field"><label for="cat">Category</label>
+        <select id="cat"><option value="">All categories</option><option>Fabric Rolls</option><option>Non-Woven Rolls</option><option>Plastic Rolls</option><option>Shopping Bags</option><option>Handle Bags</option><option>Custom Printed Bags</option></select></div>
+      <div class="field"><label for="type">Product type</label>
+        <select id="type"><option value="">All</option><option>Roll</option><option>Finished bag</option><option>Custom-made</option></select></div>
+      <div class="field"><label for="price">Price</label>
+        <select id="price"><option value="">Any</option><option>Rate available</option><option>Price on request</option></select></div>
+    </aside>
+    <div><div id="count" class="hint" style="margin-bottom:10px"></div><div class="grid g3" id="list"></div></div>
+  </div>
+</div>
+</main>
+<div data-slot="footer"></div>
+<script src="assets/layout.js"></script>
+<script>
+const items=[
+ ["Fabric Roll A","फ्याब्रिक रोल","Fabric Rolls","Roll",["Width — placeholder","GSM — placeholder"],"Price on request","grey","Request Quote"],
+ ["Non-woven Roll B","नन-वोभन रोल","Non-Woven Rolls","Roll",["Colour options","MOQ — placeholder"],"Starting from Rs. 000 / kg","blue","Request Quote"],
+ ["Plastic Roll C","प्लास्टिक रोल","Plastic Rolls","Roll",["Thickness — placeholder","Width — placeholder"],"Rs. 000.00 / kg","green","Request Quote"],
+ ["Plastic Shopping Bag D","प्लास्टिक झोला","Shopping Bags","Finished bag",["Standard sizes","Printing available"],"Rs. 000.00 / pc","green","Customize"],
+ ["Handle Bag E","ह्यान्डल ब्याग","Handle Bags","Finished bag",["Handle type","Gusset"],"Starting from Rs. 000 / pc","blue","Customize"],
+ ["Printed Bag with Shop Name","छापिएको ब्याग","Custom Printed Bags","Custom-made",["Shop name / logo","Both sides"],"Price on request","grey","Customize"]];
+const list=document.getElementById("list");
+function draw(){
+  const q=document.getElementById("q").value.toLowerCase(),c=document.getElementById("cat").value,t=document.getElementById("type").value,p=document.getElementById("price").value;
+  const r=items.filter(i=>(!q||i[0].toLowerCase().includes(q))&&(!c||i[2]===c)&&(!t||i[3]===t)&&(!p||(p==="Price on request"?i[5]==="Price on request":i[5]!=="Price on request")));
+  document.getElementById("count").textContent=r.length+" product(s) · DEMO data";
+  list.innerHTML=r.map(i=>`<article class="card pcard"><div class="placeholder-photo">DEMO photo</div><div class="body"><span class="badge ${i[6]}" style="align-self:flex-start">${i[5].startsWith("Price")?"On request":"Rate available"}</span><h3><a href="product.html">${i[0]}</a></h3><div class="ne">${i[1]}</div><div class="chips">${i[4].map(s=>`<span class="chip">${s}</span>`).join("")}</div><div class="price">${i[5]}</div><a class="btn small ${i[7]==="Customize"?"red":""}" href="${i[7]==="Customize"?"customize.html":"product.html"}">${i[7]}</a></div></article>`).join("")||'<p class="card">No products match.</p>';
+}
+["q","cat","type","price"].forEach(id=>document.getElementById(id).addEventListener("input",draw));draw();
+if(innerWidth<860)document.getElementById("shop").style.gridTemplateColumns="1fr";
+</script>
+</body></html>

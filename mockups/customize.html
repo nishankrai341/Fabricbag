@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customize Your Bag — Sanjana Plastic & Business Link (DEMO)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="customize">
+<div data-slot="header"></div>
+<main id="main" class="section"><div class="container">
+  <span class="eyebrow">Bag customizer</span><h1 style="font-size:2rem">Design Your Bag</h1>
+  <p class="lead">Choose options, preview your bag and request a quotation. Size limits shown are demo placeholders.</p>
+  <div class="cz" style="margin-top:20px">
+    <section class="card" aria-label="Options">
+      <div class="step-h" style="margin-top:0"><b>1</b><h3 style="margin:0">Bag type</h3></div>
+      <div class="opt-group" data-key="type"><button class="opt" aria-pressed="false">Shopping bag</button><button class="opt" aria-pressed="true">Handle bag</button><button class="opt" aria-pressed="false">Fabric bag</button><button class="opt" aria-pressed="false">Custom shape</button></div>
+
+      <div class="step-h"><b>2</b><h3 style="margin:0">Material</h3></div>
+      <div class="opt-group" data-key="material"><button class="opt" aria-pressed="true">Plastic</button><button class="opt" aria-pressed="false">Non-woven</button><button class="opt" aria-pressed="false">Fabric</button></div>
+
+      <div class="step-h"><b>3</b><h3 style="margin:0">Colour</h3></div>
+      <div class="swatches" role="group" aria-label="Bag colour">
+        <button class="swatch" aria-label="White" aria-pressed="true" data-color="#FFFFFF" style="background:#fff"></button>
+        <button class="swatch" aria-label="Navy" aria-pressed="false" data-color="#12336B" style="background:#12336B"></button>
+        <button class="swatch" aria-label="Red" aria-pressed="false" data-color="#D83B55" style="background:#D83B55"></button>
+        <button class="swatch" aria-label="Green" aria-pressed="false" data-color="#21876D" style="background:#21876D"></button>
+        <button class="swatch" aria-label="Yellow" aria-pressed="false" data-color="#F2C94C" style="background:#F2C94C"></button>
+        <button class="swatch" aria-label="Black" aria-pressed="false" data-color="#222222" style="background:#222"></button>
+      </div>
+      <p class="hint">Available colours are set by the owner per material.</p>
+
+      <div class="step-h"><b>4</b><h3 style="margin:0">Size</h3></div>
+      <div class="opt-group" style="margin-bottom:10px"><button class="opt" aria-pressed="false" onclick="w.value=250;h.value=350;g.value=80;w.dispatchEvent(new Event('input'))">Standard: Small</button><button class="opt" aria-pressed="false" onclick="w.value=300;h.value=400;g.value=100;w.dispatchEvent(new Event('input'))">Standard: Medium</button><button class="opt" aria-pressed="false">Custom size ↓</button></div>
+      <div class="row3">
+        <div class="field"><label for="w">Width (mm)</label><input id="w" type="number" value="300"></div>
+        <div class="field"><label for="h">Height (mm)</label><input id="h" type="number" value="400"></div>
+        <div class="field"><label for="g">Gusset (mm)</label><input id="g" type="number" value="100"></div>
+      </div>
+      <div id="errs" aria-live="polite"></div>
+
+      <div class="step-h"><b>5</b><h3 style="margin:0">Printing</h3></div>
+      <div class="opt-group" data-key="print"><button class="opt" aria-pressed="false">No printing</button><button class="opt" aria-pressed="true">Shop name</button><button class="opt" aria-pressed="false">Logo</button><button class="opt" aria-pressed="false">Logo + name</button><button class="opt" aria-pressed="false">Custom artwork</button></div>
+      <div class="opt-group" data-key="sides" style="margin-top:10px"><button class="opt" aria-pressed="true">One side</button><button class="opt" aria-pressed="false">Both sides</button></div>
+      <div class="field" style="margin-top:14px"><label for="shop">Shop name</label><input id="shop" maxlength="28" placeholder="e.g. Your Shop Name"></div>
+      <div class="field"><label for="file">Upload logo or artwork</label><input id="file" type="file" accept=".png,.jpg,.jpeg,.svg,.pdf"><div class="hint">PNG, JPG, SVG or PDF. Files are checked for safety on upload (demo: not uploaded).</div></div>
+
+      <div class="step-h"><b>6</b><h3 style="margin:0">Handle</h3></div>
+      <div class="opt-group" data-key="handle"><button class="opt" aria-pressed="true">Loop handle</button><button class="opt" aria-pressed="false">Flexi-loop</button><button class="opt" aria-pressed="false">Cut-out handle</button></div>
+
+      <div class="step-h"><b>7</b><h3 style="margin:0">Quantity &amp; delivery</h3></div>
+      <div class="row2"><div class="field"><label for="qty">Quantity (pcs)</label><input id="qty" type="number" value="500"></div>
+        <div class="field"><label for="loc">Delivery location</label><input id="loc" placeholder="Area / district"></div></div>
+      <div class="field"><label for="ins">Special instructions</label><textarea id="ins" rows="2"></textarea></div>
+    </section>
+
+    <aside class="preview card" aria-label="Preview and summary">
+      <div style="text-align:center">
+        <svg viewBox="0 0 300 360" width="300" role="img" aria-label="Approximate bag preview">
+          <g id="handleG"><path d="M95 72 C95 8 205 8 205 72" fill="none" stroke="#12336B" stroke-width="7" stroke-linecap="round"/></g>
+          <path id="bagBody" d="M40 80 H260 L275 335 Q275 348 262 348 H38 Q25 348 25 335 Z" fill="#fff" stroke="#12336B" stroke-width="3"/>
+          <g id="bagLogo" fill="none" stroke="#12336B" stroke-width="2.5"><circle cx="150" cy="170" r="36"/><text id="bagLogoText" x="150" y="177" text-anchor="middle" stroke="none" font-size="18" font-weight="800" fill="#12336B" font-family="Inter,sans-serif">LOGO</text></g>
+          <text id="bagText" x="150" y="268" text-anchor="middle" font-size="18" font-weight="700" fill="#12336B" font-family="Inter,sans-serif">Your Shop Name</text>
+          <text id="sidesLbl" x="150" y="335" text-anchor="middle" font-size="10" fill="#888" font-family="Inter,sans-serif"></text>
+        </svg>
+      </div>
+      <div class="notice">Approximate preview — not final print-ready artwork. Final artwork is confirmed with you before production.</div>
+      <table id="summary" style="margin-top:10px"></table>
+      <div class="price-state" id="priceState" aria-live="polite"></div>
+      <div style="display:grid;gap:8px;margin-top:12px">
+        <a class="btn red" href="account.html" onclick="event.preventDefault();alert('Demo: asks you to log in or register, then submits the quotation request with this design.')">Request Custom Quotation</a>
+        <button class="btn ghost" onclick="alert('Demo: saves design to My Account → Saved designs.')">Save design</button>
+      </div>
+    </aside>
+  </div>
+</div></main>
+<div data-slot="footer"></div>
+<script src="assets/layout.js"></script>
+<script src="assets/customizer.js"></script>
+</body></html>
