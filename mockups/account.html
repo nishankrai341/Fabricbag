@@ -10,8 +10,8 @@
 <div data-slot="header"></div>
 <main id="main" class="section"><div class="container">
   <span class="eyebrow">Customer portal · DEMO customer</span>
-  <h1 style="font-size:2rem">Hello, Demo Shop</h1>
-  <div class="tabs" role="tablist"><a class="active" href="#">Overview</a><a href="#orders">Orders</a><a href="#quotes">Quotations</a><a href="#payments">Payments</a><a href="#designs">Saved designs</a><a href="#profile">Profile</a></div>
+  <h1 style="font-size:2rem">Welcome back, Demo Shop.</h1>
+  <p class="lead">Your orders, quotations and designs. All in one place.</p><div class="tabs" aria-label="Account sections"><a class="active" href="#">Overview</a><a href="#orders">Orders</a><a href="#quotes">Quotations</a><a href="#payments">Payments</a><a href="#designs">Saved designs</a><a href="#profile">Profile</a></div>
 
   <div class="kpis">
     <div class="kpi"><div class="l">Open orders</div><div class="v">2</div></div>
@@ -60,8 +60,8 @@
 
   <section class="card" id="profile" style="margin-top:20px">
     <h2 style="font-size:1.3rem">Shop profile</h2>
-    <div class="row2"><div class="field"><label>Shop name</label><input value="Demo Shop"></div><div class="field"><label>Phone</label><input value="98XXXXXXXX"></div></div>
-    <div class="row2"><div class="field"><label>Delivery address</label><input value="Demo address, Kathmandu"></div><div class="field"><label>PAN / VAT (optional)</label><input placeholder="Optional"></div></div>
+    <div class="row2"><div class="field"><label for="profileShop">Shop name</label><input id="profileShop" value="Demo Shop"></div><div class="field"><label for="profilePhone">Phone</label><input id="profilePhone" value="98XXXXXXXX"></div></div>
+    <div class="row2"><div class="field"><label for="profileAddress">Delivery address</label><input id="profileAddress" value="Demo address, Kathmandu"></div><div class="field"><label for="profileTax">PAN / VAT (optional)</label><input id="profileTax" placeholder="Optional"></div></div>
     <button class="btn">Save</button>
   </section>
 </div></main>

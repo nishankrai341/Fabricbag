@@ -41,7 +41,7 @@
           <div class="field"><label for="qty">Quantity</label><input id="qty" type="number" min="1" value="50"></div></div>
         <p class="hint">Unit conversion (kg ⇄ roll) is only available when this roll's weight is listed.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <a class="btn" href="login-demo" onclick="event.preventDefault();alert('Demo: login required. Direct ordering is available only to approved customers when a valid rate exists.')">Order (approved customers)</a>
+          <a class="btn" href="login-demo" onclick="event.preventDefault();window.demoToast('Demo only. Direct ordering requires an approved account and a confirmed rate.')">Order (approved customers)</a>
           <a class="btn red" href="customize.html">Request Quotation</a></div>
       </div>
     </div>

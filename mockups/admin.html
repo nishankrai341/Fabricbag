@@ -7,15 +7,15 @@
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-<div class="demo-ribbon">DEMO</div>
+<div class="demo-ribbon">DESIGN PREVIEW &middot; Sample data only</div>
 <div class="layout-app">
-  <aside class="side" aria-label="Admin menu">
+  <aside id="adminMenu" class="side" aria-label="Admin menu">
     <a class="logo" href="index.html"><span class="logo-mark">SP</span><span>Sanjana Plastic<small style="color:#9fb4dc">Owner panel</small></span></a>
     <a class="active" href="#">Dashboard</a><a href="#">Products</a><a href="#">Categories</a><a href="#">Product Rates</a><a href="#">Customers</a><a href="#">Inquiries</a><a href="#">Quotations</a><a href="#">Orders</a><a href="#">Payments</a><a href="#">Customer Dues</a><a href="#">Content</a><a href="#">Gallery &amp; Banners</a><a href="#">Reports</a><a href="#">Settings</a>
   </aside>
-  <main class="main-pane" id="main">
+  <main class="main-pane" id="main"><button class="btn ghost mobile-admin-toggle" aria-expanded="false" aria-controls="adminMenu">Owner menu</button>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <h1 style="font-size:1.6rem;margin:0">Dashboard</h1>
+      <h1 style="font-size:1.6rem;margin:0">Your business at a glance.</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn small" href="#">+ Add product</a><a class="btn small ghost" href="#">Update rate</a><a class="btn small red" href="#">Record payment</a></div>
     </div>
     <p class="hint">All figures are demo placeholders — real numbers are calculated from orders, invoices and payments.</p>
@@ -59,4 +59,4 @@
       </table></div></section>
   </main>
 </div>
-</body></html>
+<script src="assets/layout.js"></script></body></html>
